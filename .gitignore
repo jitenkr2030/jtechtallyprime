@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Data files (NEVER commit actual accounting data)
+data/
+*.sqlite3
+*.db
+exports/
+*.log
+
+# Backups
+backups/
+*.tar.gz
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Static files collected by Django
+data/static/

@@ -1,0 +1,23 @@
+[Unit]
+Description=JTech Tally Bridge - Scheduler
+After=network.target jtech-tally-bridge.service
+
+[Service]
+Type=simple
+User=jtech
+Group=jtech
+WorkingDirectory=/opt/jtech-tally-bridge
+Environment="PATH=/opt/jtech-tally-bridge/.venv/bin:/usr/bin"
+EnvironmentFile=/opt/jtech-tally-bridge/.env.prod
+ExecStart=/opt/jtech-tally-bridge/.venv/bin/python main.py run-scheduler
+KillMode=process
+Restart=on-failure
+RestartSec=10
+
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/jtech-tally-bridge/data
+
+[Install]
+WantedBy=multi-user.target

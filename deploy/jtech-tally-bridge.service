@@ -1,0 +1,42 @@
+# JTech Tally Bridge - systemd service file
+# Install: sudo cp deploy/jtech-tally-bridge.service /etc/systemd/system/
+#          sudo systemctl daemon-reload
+#          sudo systemctl enable --now jtech-tally-bridge
+
+[Unit]
+Description=JTech Tally Bridge - Django + gunicorn
+After=network.target postgresql.service
+Wants=network.target
+
+[Service]
+Type=notify
+User=jtech
+Group=jtech
+WorkingDirectory=/opt/jtech-tally-bridge
+Environment="DJANGO_SETTINGS_MODULE=web.settings"
+Environment="PATH=/opt/jtech-tally-bridge/.venv/bin:/usr/bin"
+EnvironmentFile=/opt/jtech-tally-bridge/.env.prod
+ExecStart=/opt/jtech-tally-bridge/.venv/bin/gunicorn \
+    --config /opt/jtech-tally-bridge/deploy/gunicorn.conf.py \
+    web.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/jtech-tally-bridge/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

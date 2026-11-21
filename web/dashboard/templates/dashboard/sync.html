@@ -1,0 +1,64 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Sync & Freshness{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>Data Freshness</h2>
+  {% if company %}
+    <div class="kv"><span class="k">Company</span><span>{{ company.name }}</span></div>
+    <div class="kv"><span class="k">Last master sync</span>
+      <span>{{ company.last_master_sync_at|default:"never" }}</span>
+    </div>
+    <div class="kv"><span class="k">Last voucher sync</span>
+      <span>{{ company.last_voucher_sync_at|default:"never" }}</span>
+    </div>
+    <form method="post" action="{% url 'dashboard:sync_masters' %}" style="margin-top:12px;">
+      {% csrf_token %}
+      <button class="btn" type="submit">Sync All Masters Now</button>
+    </form>
+  {% else %}
+    <p class="muted">Select a company first.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recent Sync Runs</h2>
+  {% if runs %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Status</th><th>Type</th><th>Reader</th>
+        <th>Read</th><th>Persisted</th><th>Errors</th>
+        <th>Started</th><th>Duration</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in runs %}
+      <tr>
+        <td>{{ r.id }}</td>
+        <td>
+          {% if r.status == 'completed' %}
+            <span class="badge active">{{ r.status }}</span>
+          {% elif r.status == 'failed' %}
+            <span class="badge" style="background:#ffebe9;color:#cf222e;">{{ r.status }}</span>
+          {% else %}
+            <span class="badge">{{ r.status }}</span>
+          {% endif %}
+        </td>
+        <td>{{ r.sync_type }}</td>
+        <td>{{ r.reader_name|default:"-" }}</td>
+        <td>{{ r.records_read|default:"0" }}</td>
+        <td>{{ r.records_persisted|default:"0" }}</td>
+        <td>{{ r.errors_count|default:"0" }}</td>
+        <td class="muted">{{ r.started_at }}</td>
+        <td>{{ r.duration_seconds|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty">No sync runs yet. Run a sync from the home page or via CLI.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

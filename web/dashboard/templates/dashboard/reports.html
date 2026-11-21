@@ -1,0 +1,315 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Reports</h2>
+  <form method="get">
+    <div class="form-row">
+      <label>Report</label>
+      <select name="type">
+        <option value="trial_balance" {% if report_type == "trial_balance" %}selected{% endif %}>Trial Balance</option>
+        <option value="profit_loss" {% if report_type == "profit_loss" %}selected{% endif %}>Profit &amp; Loss</option>
+        <option value="balance_sheet" {% if report_type == "balance_sheet" %}selected{% endif %}>Balance Sheet</option>
+        <option value="aging" {% if report_type == "aging" %}selected{% endif %}>Aging (Debtors/Creditors)</option>
+        <option value="gstr1" {% if report_type == "gstr1" %}selected{% endif %}>GSTR-1 (Outward)</option>
+        <option value="gstr3b" {% if report_type == "gstr3b" %}selected{% endif %}>GSTR-3B (Summary)</option>
+        <option value="reconcile" {% if report_type == "reconcile" %}selected{% endif %}>Reconciliation</option>
+      </select>
+      <label>From</label>
+      <input type="date" name="from" value="{{ filters.from }}">
+      <label>To / As on</label>
+      <input type="date" name="as_on" value="{{ filters.as_on }}">
+      {% if report_type == "aging" %}
+      <label>Party</label>
+      <select name="party_type">
+        <option value="both" {% if filters.party_type == "both" %}selected{% endif %}>Both</option>
+        <option value="debtors" {% if filters.party_type == "debtors" %}selected{% endif %}>Debtors</option>
+        <option value="creditors" {% if filters.party_type == "creditors" %}selected{% endif %}>Creditors</option>
+      </select>
+      {% endif %}
+      <button class="btn" type="submit">Generate</button>
+    </div>
+  </form>
+  {% if report %}
+    <div style="margin-top: 12px;">
+      <a class="btn secondary" href="/api/export/{{ report_type }}/?from={{ filters.from }}&to={{ filters.to }}&as_on={{ filters.as_on }}&party_type={{ filters.party_type }}">Download Excel</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if report %}
+
+{% if report.error %}
+<div class="card">
+  <p class="error">Error generating report: {{ report.error }}</p>
+</div>
+
+{% elif report_type == "trial_balance" %}
+<div class="card">
+  <h3>Trial Balance</h3>
+  <p class="muted">
+    Total Debit: <strong>{{ report.total_debit }}</strong>
+    &nbsp; Total Credit: <strong>{{ report.total_credit }}</strong>
+    &nbsp;
+    {% if report.balanced %}
+      <span class="badge active">balanced</span>
+    {% else %}
+      <span class="badge" style="background:#ffebe9;color:#cf222e;">not balanced</span>
+    {% endif %}
+  </p>
+  <table>
+    <thead><tr><th>Ledger</th><th>Group</th><th style="text-align:right;">Debit</th><th style="text-align:right;">Credit</th></tr></thead>
+    <tbody>
+      {% for r in report.rows %}
+      <tr>
+        <td>{{ r.ledger }}</td>
+        <td class="muted">{{ r.group|default:"-" }}</td>
+        <td style="text-align:right;" class="row-debit">{{ r.debit|default:"-" }}</td>
+        <td style="text-align:right;" class="row-credit">{{ r.credit|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% elif report_type == "profit_loss" %}
+<div class="card">
+  <h3>Profit &amp; Loss</h3>
+  <p class="muted">
+    Income: <strong>{{ report.income_total }}</strong>
+    &nbsp; Expense: <strong>{{ report.expense_total }}</strong>
+    &nbsp; Net Profit: <strong>{{ report.net_profit }}</strong>
+  </p>
+  <h4>Income</h4>
+  <table>
+    <thead><tr><th>Ledger</th><th>Group</th><th style="text-align:right;">Amount</th></tr></thead>
+    <tbody>
+      {% for r in report.income %}
+      <tr><td>{{ r.ledger }}</td><td class="muted">{{ r.group|default:"-" }}</td><td style="text-align:right;">{{ r.amount }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h4>Expenses</h4>
+  <table>
+    <thead><tr><th>Ledger</th><th>Group</th><th style="text-align:right;">Amount</th></tr></thead>
+    <tbody>
+      {% for r in report.expenses %}
+      <tr><td>{{ r.ledger }}</td><td class="muted">{{ r.group|default:"-" }}</td><td style="text-align:right;">{{ r.amount }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% elif report_type == "balance_sheet" %}
+<div class="card">
+  <h3>Balance Sheet (as on {{ report.as_on }})</h3>
+  <p class="muted">
+    Assets: <strong>{{ report.assets_total }}</strong>
+    &nbsp; Liabilities: <strong>{{ report.liabilities_total }}</strong>
+    &nbsp; Equity: <strong>{{ report.equity_total }}</strong>
+    &nbsp; Diff: <strong>{{ report.difference }}</strong>
+  </p>
+  <div style="display:flex;gap:24px;">
+    <div style="flex:1;">
+      <h4>Assets</h4>
+      <table>
+        <thead><tr><th>Ledger</th><th style="text-align:right;">Amount</th></tr></thead>
+        <tbody>
+          {% for r in report.assets %}<tr><td>{{ r.ledger }}</td><td style="text-align:right;">{{ r.amount }}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="flex:1;">
+      <h4>Liabilities &amp; Equity</h4>
+      <table>
+        <thead><tr><th>Ledger</th><th style="text-align:right;">Amount</th></tr></thead>
+        <tbody>
+          {% for r in report.liabilities %}<tr><td>{{ r.ledger }}</td><td style="text-align:right;">{{ r.amount }}</td></tr>{% endfor %}
+          {% for r in report.equity %}<tr><td>{{ r.ledger }} <span class="muted">(equity)</span></td><td style="text-align:right;">{{ r.amount }}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% elif report_type == "aging" %}
+<div class="card">
+  <h3>Aging Report (as on {{ report.as_on }})</h3>
+  {% if report.debtors %}
+  <h4>Debtors</h4>
+  <p class="muted">Grand total outstanding: <strong>{{ report.debtors.grand_total }}</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Ledger</th>
+        {% for b in report.buckets %}<th style="text-align:right;">{{ b }}</th>{% endfor %}
+        <th style="text-align:right;">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in report.debtors.rows %}
+      <tr>
+        <td>{{ r.ledger }}</td>
+        {% for b in report.buckets %}<td style="text-align:right;">{{ r.buckets|default:b }}</td>{% endfor %}
+        <td style="text-align:right;"><strong>{{ r.total_outstanding }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  {% if report.creditors %}
+  <h4 style="margin-top:24px;">Creditors</h4>
+  <p class="muted">Grand total outstanding: <strong>{{ report.creditors.grand_total }}</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Ledger</th>
+        {% for b in report.buckets %}<th style="text-align:right;">{{ b }}</th>{% endfor %}
+        <th style="text-align:right;">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in report.creditors.rows %}
+      <tr>
+        <td>{{ r.ledger }}</td>
+        {% for b in report.buckets %}<td style="text-align:right;">{{ r.buckets|default:b }}</td>{% endfor %}
+        <td style="text-align:right;"><strong>{{ r.total_outstanding }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+{% elif report_type == "gstr1" %}
+<div class="card">
+  <h3>GSTR-1 - Outward Supplies ({{ report.from }} to {{ report.to }})</h3>
+  <p class="muted">
+    Taxable: <strong>{{ report.grand_total.taxable_value }}</strong>
+    &nbsp; IGST: <strong>{{ report.grand_total.igst }}</strong>
+    &nbsp; CGST: <strong>{{ report.grand_total.cgst }}</strong>
+    &nbsp; SGST: <strong>{{ report.grand_total.sgst }}</strong>
+  </p>
+  <h4>Section Summary</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Section</th><th>Invoices</th>
+        <th style="text-align:right;">Taxable</th>
+        <th style="text-align:right;">IGST</th>
+        <th style="text-align:right;">CGST</th>
+        <th style="text-align:right;">SGST</th>
+        <th style="text-align:right;">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for section, t in report.section_totals.items %}
+      <tr>
+        <td>{{ section }}</td>
+        <td>{{ t.count }}</td>
+        <td style="text-align:right;">{{ t.taxable_value }}</td>
+        <td style="text-align:right;">{{ t.igst }}</td>
+        <td style="text-align:right;">{{ t.cgst }}</td>
+        <td style="text-align:right;">{{ t.sgst }}</td>
+        <td style="text-align:right;">{{ t.total }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h4 style="margin-top:16px;">HSN Summary</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>HSN</th><th>GST Rate</th><th>Qty</th>
+        <th style="text-align:right;">Taxable</th>
+        <th style="text-align:right;">IGST</th>
+        <th style="text-align:right;">CGST</th>
+        <th style="text-align:right;">SGST</th>
+        <th style="text-align:right;">Invoices</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in report.hsn_summary %}
+      <tr>
+        <td>{{ h.hsn_code }}</td>
+        <td>{{ h.gst_rate|default:"-" }}</td>
+        <td>{{ h.qty }}</td>
+        <td style="text-align:right;">{{ h.taxable_value }}</td>
+        <td style="text-align:right;">{{ h.igst }}</td>
+        <td style="text-align:right;">{{ h.cgst }}</td>
+        <td style="text-align:right;">{{ h.sgst }}</td>
+        <td>{{ h.invoice_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if report.note %}
+  <p class="muted" style="margin-top:12px;">{{ report.note }}</p>
+  {% endif %}
+</div>
+
+{% elif report_type == "gstr3b" %}
+<div class="card">
+  <h3>GSTR-3B - Monthly Summary ({{ report.from }} to {{ report.to }})</h3>
+  <h4>3.1 Outward Supplies</h4>
+  <table>
+    <thead><tr><th>Field</th><th style="text-align:right;">Amount</th></tr></thead>
+    <tbody>
+      {% for k, v in report.section_3_1_outward_supplies.items %}
+        {% if k != "total_tax" %}
+        <tr><td>{{ k|cut:"_"|title }}</td><td style="text-align:right;">{{ v }}</td></tr>
+        {% endif %}
+      {% endfor %}
+      <tr><td><strong>Total Tax</strong></td><td style="text-align:right;"><strong>{{ report.section_3_1_outward_supplies.total_tax }}</strong></td></tr>
+    </tbody>
+  </table>
+  <h4 style="margin-top:16px;">3.2 ITC (Input Tax Credit)</h4>
+  <table>
+    <thead><tr><th>Field</th><th style="text-align:right;">Amount</th></tr></thead>
+    <tbody>
+      {% for k, v in report.section_3_2_itc.items %}
+      <tr><td>{{ k|cut:"_"|title }}</td><td style="text-align:right;">{{ v }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p style="margin-top:16px;" class="muted">
+    <strong>Net Tax Payable: {{ report.net_tax_payable }}</strong>
+  </p>
+</div>
+
+{% elif report_type == "reconcile" %}
+<div class="card">
+  <h3>Reconciliation</h3>
+  <p>
+    {% if report.passed %}
+      <span class="badge active">all checks passed</span>
+    {% else %}
+      <span class="badge" style="background:#ffebe9;color:#cf222e;">issues found</span>
+    {% endif %}
+  </p>
+  {% if report.ledger_group_issues %}
+    <h4>Ledger-Group Resolution</h4>
+    <ul>{% for i in report.ledger_group_issues %}<li>{{ i }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if report.unbalanced_vouchers %}
+    <h4>Unbalanced Vouchers</h4>
+    <ul>{% for i in report.unbalanced_vouchers %}<li>{{ i }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if report.orphan_ledger_allocations %}
+    <h4>Orphan Ledger Allocations</h4>
+    <ul>{% for i in report.orphan_ledger_allocations %}<li>{{ i }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if report.duplicate_vouchers %}
+    <h4>Duplicate Vouchers</h4>
+    <ul>{% for i in report.duplicate_vouchers %}<li>{{ i }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if report.trial_balance_check %}
+    <h4>Trial Balance</h4>
+    <ul>{% for i in report.trial_balance_check %}<li>{{ i }}</li>{% endfor %}</ul>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

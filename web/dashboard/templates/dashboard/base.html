@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}JTech Tally Bridge{% endblock %}</title>
+<style>
+:root {
+  --bg: #f7f8fa;
+  --card: #ffffff;
+  --border: #e1e4e8;
+  --text: #24292e;
+  --muted: #6a737d;
+  --accent: #2f6feb;
+  --danger: #cf222e;
+  --success: #1a7f37;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+header h1 { margin: 0; font-size: 18px; }
+header nav a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+header nav a:hover { background: var(--bg); }
+header nav a.active { color: var(--accent); font-weight: 600; }
+main { padding: 24px; max-width: 1280px; margin: 0 auto; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+}
+th, td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+th { background: var(--bg); font-weight: 600; }
+tr:hover td { background: #fafbfc; }
+.muted { color: var(--muted); }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--muted);
+}
+.badge.active { background: #ddf4ff; color: var(--accent); }
+.btn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: none;
+}
+.btn.secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+.btn:hover { opacity: 0.9; }
+.form-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.form-row label { width: 120px; }
+.form-row input, .form-row select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 13px;
+}
+.kv { display: flex; gap: 8px; padding: 4px 0; }
+.kv .k { color: var(--muted); width: 160px; }
+.empty { padding: 40px; text-align: center; color: var(--muted); }
+.toast {
+  padding: 10px 14px;
+  background: #ddf4ff;
+  color: var(--accent);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.error { padding: 10px 14px; background: #ffebe9; color: var(--danger); border-radius: 4px; margin-bottom: 12px; }
+.row-debit { color: var(--success); }
+.row-credit { color: var(--danger); }
+</style>
+</head>
+<body>
+<header>
+  <h1>JTech Tally Bridge</h1>
+  <nav>
+    <a href="{% url 'dashboard:index' %}">Home</a>
+    <a href="{% url 'dashboard:sync_dashboard' %}">Sync</a>
+    <a href="{% url 'dashboard:ledgers' %}">Ledgers</a>
+    <a href="{% url 'dashboard:groups' %}">Groups</a>
+    <a href="{% url 'dashboard:voucher_types' %}">Voucher Types</a>
+    <a href="{% url 'dashboard:stock_items' %}">Stock Items</a>
+    <a href="{% url 'dashboard:vouchers' %}">Vouchers</a>
+    <a href="{% url 'dashboard:reports' %}">Reports</a>
+    <a href="{% url 'dashboard:profiles' %}">Profiles</a>
+  </nav>
+  <div style="margin-left: auto;">
+    {% if company %}
+      <span class="badge active">{{ company.name }}</span>
+    {% else %}
+      <span class="badge">No company selected</span>
+    {% endif %}
+    {% if user.is_authenticated %}
+      <span class="muted" style="margin-left: 12px;">{{ user.username }}</span>
+    {% endif %}
+  </div>
+</header>
+<main>
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Stock Items{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Stock Items <span class="muted">({{ count }})</span></h2>
+  {% if stock_items %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th><th>Group</th><th>UOM</th>
+        <th style="text-align:right;">Op Qty</th>
+        <th style="text-align:right;">Op Value</th>
+        <th style="text-align:right;">Cl Qty</th>
+        <th style="text-align:right;">Cl Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in stock_items %}
+      <tr>
+        <td>{{ s.name }}</td>
+        <td>{{ s.parent|default:"-" }}</td>
+        <td>{{ s.uom|default:"-" }}</td>
+        <td style="text-align:right;">{{ s.opening_qty|default:"-" }}</td>
+        <td style="text-align:right;">{{ s.opening_value|default:"-" }}</td>
+        <td style="text-align:right;">{{ s.closing_qty|default:"-" }}</td>
+        <td style="text-align:right;">{{ s.closing_value|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty">No stock items stored yet. Run <code>python main.py read-stock-items</code> first.</p>
+  {% endif %}
+</div>
+{% endblock %}

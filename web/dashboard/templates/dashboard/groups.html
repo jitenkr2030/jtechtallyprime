@@ -1,0 +1,30 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Groups{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Groups <span class="muted">({{ count }})</span></h2>
+  {% if groups %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th><th>Parent</th><th>Primary</th>
+        <th>Revenue</th><th>Deemed +</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in groups %}
+      <tr>
+        <td>{{ g.name }}</td>
+        <td>{{ g.parent|default:"-" }}</td>
+        <td>{{ g.primary_group|default:"-" }}</td>
+        <td>{{ g.is_revenue|default:"-" }}</td>
+        <td>{{ g.is_deemed_positive|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty">No groups stored yet. Run <code>python main.py read-groups</code> first.</p>
+  {% endif %}
+</div>
+{% endblock %}

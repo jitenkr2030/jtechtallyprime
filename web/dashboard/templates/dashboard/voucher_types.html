@@ -1,0 +1,30 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Voucher Types{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Voucher Types <span class="muted">({{ count }})</span></h2>
+  {% if voucher_types %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th><th>Parent</th><th>Numbering</th>
+        <th>Active</th><th>POS</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in voucher_types %}
+      <tr>
+        <td>{{ v.name }}</td>
+        <td>{{ v.parent|default:"-" }}</td>
+        <td>{{ v.numbering_method|default:"-" }}</td>
+        <td>{{ v.is_active|default:"-" }}</td>
+        <td>{{ v.use_for_pos|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty">No voucher types stored yet. Run <code>python main.py read-voucher-types</code> first.</p>
+  {% endif %}
+</div>
+{% endblock %}

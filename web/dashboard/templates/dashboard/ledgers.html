@@ -1,0 +1,30 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Ledgers{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Ledgers <span class="muted">({{ count }})</span></h2>
+  {% if ledgers %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th><th>Group</th>
+        <th style="text-align:right;">Opening</th>
+        <th style="text-align:right;">Closing</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in ledgers %}
+      <tr>
+        <td>{{ l.name }}</td>
+        <td>{{ l.parent_group|default:"-" }}</td>
+        <td style="text-align:right;">{{ l.opening_balance_amount|default:"-" }}</td>
+        <td style="text-align:right;">{{ l.closing_balance_amount|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty">No ledgers stored yet. Run <code>python main.py read-ledgers</code> first.</p>
+  {% endif %}
+</div>
+{% endblock %}

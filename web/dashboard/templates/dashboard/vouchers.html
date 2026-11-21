@@ -1,0 +1,43 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Vouchers{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Vouchers <span class="muted">({{ count }} shown, first 500)</span></h2>
+  <form method="get" style="margin-bottom: 12px;">
+    <div class="form-row">
+      <label>From</label>
+      <input type="date" name="from" value="{{ filters.from }}">
+      <label>To</label>
+      <input type="date" name="to" value="{{ filters.to }}">
+      <label>Type</label>
+      <input type="text" name="type" value="{{ filters.type }}" placeholder="Sales / Purchase / ...">
+      <button class="btn" type="submit">Filter</button>
+    </div>
+  </form>
+  {% if vouchers %}
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>Type</th><th>Vch No.</th>
+        <th>Party</th><th>Narration</th>
+        <th style="text-align:right;">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in vouchers %}
+      <tr>
+        <td>{{ v.voucher_date }}</td>
+        <td>{{ v.voucher_type }}</td>
+        <td>{{ v.voucher_number|default:"-" }}</td>
+        <td>{{ v.party|default:"-" }}</td>
+        <td>{{ v.narration|default:"-"|truncatechars:60 }}</td>
+        <td style="text-align:right;">{{ v.amount|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty">No vouchers stored. Run <code>python main.py read-vouchers --from YYYY-MM-DD --to YYYY-MM-DD</code> first.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+# Build artifacts
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Data files - never bake into image
+data/
+backups/
+*.sqlite3
+*.log
+exports/
+
+# Dev / IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+
+# Diagnostics - dev-only
+diagnostics/
+
+# Tests
+tests/
+scripts/smoke_test.py
+
+# Env files
+.env
+.env.prod
+.env.local
+
+# Certs - must be mounted, not baked
+deploy/certs/
+
+# OS
+.DS_Store
+Thumbs.db
